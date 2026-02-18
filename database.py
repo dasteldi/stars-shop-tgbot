@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, String, BigInteger, DateTime, Float, Boolean
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 import os
+from contextlib import contextmanager
 
 from config import config
 
-# Создаем директорию для базы данных
 os.makedirs("data", exist_ok=True)
 
 engine = create_engine(config.DATABASE_URL, echo=True)
@@ -32,15 +32,15 @@ class Payment(Base):
     payment_id = Column(String, unique=True, nullable=False)
     amount = Column(Float, nullable=False)
     stars_amount = Column(Integer, nullable=False)
-    payment_method = Column(String, default="crypto")  # Добавили это поле
+    payment_method = Column(String, default="crypto")
     status = Column(String, default="pending")
     created_at = Column(DateTime, default=datetime.utcnow)
     paid_at = Column(DateTime, nullable=True)
 
-# Создаем таблицы
 Base.metadata.create_all(bind=engine)
 
-def get_db():
+@contextmanager
+def db_session():
     db = SessionLocal()
     try:
         yield db
